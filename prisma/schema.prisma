@@ -50,3 +50,119 @@ enum EmployeeRole {
   OPERATOR
   SUPERVISOR
 }
+
+model User {
+  id              Int           @id @default(autoincrement())
+  name            String
+  email           String        @unique
+  password_hash   String
+  role            UserRole
+  created_at      DateTime      @default(now())
+  updated_at      DateTime      @updatedAt
+
+  activities      Activity[]
+  recordedReports DailyStatus[] @relation("RecordedByUser")
+  activatedReports DailyStatus[] @relation("ForWhichActivator")
+  reportedFaults  Fault[]       @relation("ReportedByUser")
+  simulatorEmployees SimulatorEmployee[]
+}
+
+
+model Simulator {
+  id            Int                  @id @default(autoincrement())
+  name          String
+  model         String
+  serial_number String               @unique
+  company_id    Int
+  site_id       Int
+  status        SimulatorStatus
+
+  company       SimulatorCompany     @relation(fields: [company_id], references: [id])
+  site          SimulatorSite        @relation(fields: [site_id], references: [id])
+  activities    Activity[]
+  dailyStatuses DailyStatus[]
+  faults        Fault[]
+  employees     SimulatorEmployee[]
+}
+
+model SimulatorCompany {
+  id             Int          @id @default(autoincrement())
+  name           String
+  contact_person String
+  email          String
+  phone_number   String
+  address        String
+
+  simulators     Simulator[]
+}
+
+model SimulatorSite {
+  id            Int          @id @default(autoincrement())
+  name          String
+  address       String
+  city          String
+  country       String
+  contact_email String
+
+  simulators    Simulator[]
+}
+model Activity {
+  id               Int        @id @default(autoincrement())
+  simulator_id     Int
+  user_id          Int
+  description      String
+  type             ActivityType
+  timestamp        DateTime    @default(now())
+  duration_minutes Int?
+
+  simulator        Simulator   @relation(fields: [simulator_id], references: [id])
+  user             User        @relation(fields: [user_id], references: [id])
+}
+
+model DailyStatus {
+  id                     Int         @id @default(autoincrement())
+  simulator_id           Int
+  date                   DateTime
+  status                 DailyStatusEnum
+  notes                  String?
+  recorded_by_user_id    Int
+  for_which_activator_id Int
+
+  simulator              Simulator @relation(fields: [simulator_id], references: [id])
+  recordedBy             User      @relation("RecordedByUser", fields: [recorded_by_user_id], references: [id])
+  forWhichActivator      User      @relation("ForWhichActivator", fields: [for_which_activator_id], references: [id])
+}
+
+model FaultType {
+  id        Int           @id @default(autoincrement())
+  code      String         @unique
+  label     String
+  severity  FaultSeverity
+
+  faults    Fault[]
+}
+
+model Fault {
+  id                  Int          @id @default(autoincrement())
+  simulator_id        Int
+  fault_type_id       Int
+  description         String
+  reported_by_user_id Int
+  reported_at         DateTime     @default(now())
+  resolved_at         DateTime?
+  status              FaultStatus
+
+  simulator           Simulator    @relation(fields: [simulator_id], references: [id])
+  faultType           FaultType    @relation(fields: [fault_type_id], references: [id])
+  reportedBy          User         @relation("ReportedByUser", fields: [reported_by_user_id], references: [id])
+}
+
+model SimulatorEmployee {
+  id                 Int           @id @default(autoincrement())
+  user_id            Int
+  simulator_id       Int
+  role_on_simulator  EmployeeRole
+
+  user               User          @relation(fields: [user_id], references: [id])
+  simulator          Simulator     @relation(fields: [simulator_id], references: [id])
+}

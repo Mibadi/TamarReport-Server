@@ -6,3 +6,47 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum UserRole {
+  ADMIN
+  SUPERVISOR
+  TECHNICIAN
+  OPERATOR
+}
+
+enum SimulatorStatus {
+  OPERATIONAL
+  UNDER_MAINTENANCE
+  OFFLINE
+}
+
+enum ActivityType {
+  MAINTENANCE
+  TEST_RUN
+  UPGRADE
+}
+
+enum DailyStatusEnum {
+  OPERATIONAL
+  WARNING
+  ERROR
+}
+
+enum FaultStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  DISMISSED
+}
+
+enum FaultSeverity {
+  NORMAL
+  FAILURE
+  SECURITY
+}
+
+enum EmployeeRole {
+  MAINTENANCE
+  OPERATOR
+  SUPERVISOR
+}
